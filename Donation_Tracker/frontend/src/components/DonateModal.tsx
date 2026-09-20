@@ -29,7 +29,7 @@ export function DonateModal({
   const [txHash, setTxHash] = useState<string>('');
   const [errorMessage, setErrorMessage] = useState<string>('');
 
-  const [recipient, setRecipient] = useState<string>(targetAddress || process.env.NEXT_PUBLIC_DEFAULT_CONTRACT_ADDRESS || '');
+  const [recipient, setRecipient] = useState<string>(targetAddress || '');
   const [copied, setCopied] = useState<boolean>(false);
 
   if (!isOpen) return null;

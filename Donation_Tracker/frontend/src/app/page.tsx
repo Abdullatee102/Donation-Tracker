@@ -23,10 +23,8 @@ import { Heart, Activity, Code2 } from 'lucide-react';
 export default function Home() {
   // Default network: Bohr Testnet (Chain ID 968)
   const [currentNetwork, setCurrentNetwork] = useState<NetworkConfig>(BOHR_TESTNET);
-  // Default donation target address (reads from environment if available)
-  const [targetAddress, setTargetAddress] = useState<string>(
-    process.env.NEXT_PUBLIC_DEFAULT_CONTRACT_ADDRESS || ''
-  );
+  // Default donation target address is blank to require user input
+  const [targetAddress, setTargetAddress] = useState<string>('');
   
   // Dynamic state loaded directly from the selected network RPC.
   const [contractBalance, setContractBalance] = useState<string>('0.0000');

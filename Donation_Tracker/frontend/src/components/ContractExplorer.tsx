@@ -25,6 +25,10 @@ export function ContractExplorer({ targetAddress, currentNetwork }: ContractExpl
     let isMounted = true;
     const inspectContract = async () => {
       setLoading(true);
+      if (!targetAddress || !/^0x[a-fA-F0-9]{40}$/.test(targetAddress)) {
+        setLoading(false);
+        return;
+      }
       try {
         const hasCode = await checkIfContract(targetAddress, currentNetwork.rpcUrl);
         const rawCode = await rpcCall(currentNetwork.rpcUrl, 'eth_getCode', [targetAddress, 'latest']);

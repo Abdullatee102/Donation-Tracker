@@ -84,9 +84,9 @@ export function ContractSelector({ currentAddress, onAddressChange, currentNetwo
                 setInputAddress(e.target.value);
                 validateAndSubmit(e.target.value);
               }}
-              placeholder="Enter contract or wallet address (0x...)"
+              placeholder="Enter your address to track your analytics..."
               className={`w-full bg-[#121929] border rounded-xl py-3 pl-11 pr-24 text-sm font-mono text-white placeholder-slate-500 focus:outline-none transition-all ${
-                !isValidAddress
+                !isValidAddress && inputAddress.length > 0
                   ? 'border-rose-500/70 focus:border-rose-500'
                   : 'border-white/10 focus:border-cyan-500/60 focus:ring-1 focus:ring-cyan-500/40'
               }`}

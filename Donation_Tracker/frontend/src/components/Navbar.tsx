@@ -4,6 +4,7 @@ import React from 'react';
 import { NetworkConfig, WalletState } from '@/lib/types';
 import { SUPPORTED_NETWORKS } from '@/lib/networks';
 import { Wallet, Zap, LogOut, ChevronDown } from 'lucide-react';
+import { useAppKit } from '@reown/appkit/react';
 
 interface NavbarProps {
   currentNetwork: NetworkConfig;
@@ -21,6 +22,7 @@ export function Navbar({
   onDisconnectWallet,
 }: NavbarProps) {
   const [isDropdownOpen, setIsDropdownOpen] = React.useState(false);
+  const { open } = useAppKit();
 
   return (
     <header className="sticky top-0 z-50 backdrop-blur-md bg-opacity-80 border-b border-white/10 bg-[#07090e]/90 px-4 lg:px-8 py-3.5">
@@ -80,7 +82,37 @@ export function Navbar({
           </div>
 
           {/* Web3 Connection Button */}
-          <appkit-button />
+          {walletState.isConnected ? (
+            <div className="flex items-center gap-2 bg-slate-900 border border-white/10 rounded-xl p-1 pr-3">
+              <div className="bg-slate-800 rounded-lg px-3 py-1.5 text-xs font-mono text-cyan-300">
+                {walletState.balance} {walletState.symbol}
+              </div>
+              <button 
+                onClick={() => open()}
+                className="text-xs font-mono text-slate-300 hover:text-white transition-colors cursor-pointer"
+              >
+                {walletState.address?.slice(0, 6)}...{walletState.address?.slice(-4)}
+              </button>
+              <button 
+                onClick={() => {
+                  if (onDisconnectWallet) onDisconnectWallet();
+                  open(); // Also open AppKit to allow disconnect from modal
+                }}
+                className="ml-2 text-slate-500 hover:text-rose-400 transition-colors cursor-pointer"
+                title="Disconnect or Switch Wallet"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            </div>
+          ) : (
+            <button 
+              onClick={() => open()}
+              className="bg-cyan-500 hover:bg-cyan-400 text-[#040914] font-bold text-sm py-2 px-5 rounded-xl shadow-lg shadow-cyan-500/20 transition-all flex items-center gap-2"
+            >
+              <Wallet className="w-4 h-4" />
+              <span>Connect Wallet</span>
+            </button>
+          )}
         </div>
       </div>
     </header>
