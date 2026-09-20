@@ -6,6 +6,7 @@ import { createAppKit } from '@reown/appkit/react';
 import { mainnet, sepolia } from '@reown/appkit/networks';
 import { WagmiAdapter } from '@reown/appkit-adapter-wagmi';
 import { WagmiProvider, http } from 'wagmi';
+import { injected, walletConnect, coinbaseWallet } from 'wagmi/connectors';
 import { BOHR_TESTNET } from '../lib/networks';
 
 const queryClient = new QueryClient({
@@ -42,11 +43,23 @@ export const metadata = {
 
 export const networks = [bohrTestnet, mainnet, sepolia];
 
+// Explicitly populate wallet connectors to ensure they render in the modal
+const connectors = [
+  walletConnect({ projectId, metadata, showQrModal: false }),
+  injected({ shimDisconnect: true }),
+  coinbaseWallet({
+    appName: metadata.name,
+    appLogoUrl: metadata.icons[0]
+  })
+];
+
 export const wagmiAdapter = new WagmiAdapter({
   projectId,
   networks,
   // @ts-ignore
-  metadata
+  metadata,
+  ssr: true,
+  connectors
 });
 
 export const wagmiConfig = wagmiAdapter.wagmiConfig;
