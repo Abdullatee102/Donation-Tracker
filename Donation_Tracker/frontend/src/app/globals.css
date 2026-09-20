@@ -278,6 +278,7 @@ select:focus-visible {
   background: var(--bg-surface);
   border: 1px solid var(--border-glow);
   border-radius: var(--radius-xl);
+  padding: 28px;
   padding: 20px;
   width: 100%;
   max-width: 520px;
