@@ -195,7 +195,7 @@ export function DonateModal({
               <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider">
                 Select Amount ({currentNetwork.symbol})
               </label>
-              <div className="grid grid-cols-5 gap-2">
+              <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
                 {presetAmounts.map((val) => (
                   <button
                     key={val}

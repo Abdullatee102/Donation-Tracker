@@ -97,9 +97,9 @@ export function ContractExplorer({ targetAddress, currentNetwork }: ContractExpl
 
   return (
     <div className="glass-panel p-6 space-y-6">
-      <div className="flex items-center justify-between border-b border-white/10 pb-4">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-white/10 pb-4">
         <div className="flex items-center gap-2">
-          <Code2 className="w-5 h-5 text-cyan-400" />
+          <Code2 className="w-5 h-5 text-cyan-400 shrink-0" />
           <h3 className="text-lg font-bold text-white tracking-tight">On-Chain Smart Contract & ABI Inspector</h3>
         </div>
 
@@ -107,10 +107,10 @@ export function ContractExplorer({ targetAddress, currentNetwork }: ContractExpl
           href={`${currentNetwork.explorerUrl}/address/${targetAddress}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="btn-secondary text-xs py-1.5 px-3"
+          className="btn-secondary text-xs py-1.5 px-3 w-full md:w-auto flex justify-center"
         >
           <span>View on Bohr Explorer</span>
-          <ExternalLink className="w-3.5 h-3.5" />
+          <ExternalLink className="w-3.5 h-3.5 shrink-0" />
         </a>
       </div>
 

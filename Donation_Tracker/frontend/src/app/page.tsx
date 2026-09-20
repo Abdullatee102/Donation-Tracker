@@ -291,35 +291,35 @@ export default function Home() {
           />
 
           {/* Navigation Tabs */}
-          <div className="flex items-center justify-between border-b border-white/10 pb-2">
-            <div className="flex items-center gap-2">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4 border-b border-white/10 pb-2">
+            <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 w-full md:w-auto">
               <button
                 onClick={() => setActiveTab('stream')}
-                className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
+                className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 flex-1 md:flex-none justify-center ${
                   activeTab === 'stream'
                     ? 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/30'
                     : 'text-slate-400 hover:text-white hover:bg-slate-900'
                 }`}
               >
-                <Activity className="w-4 h-4" />
-                <span>Live Donation Feed ({donations.length})</span>
+                <Activity className="w-4 h-4 shrink-0" />
+                <span className="whitespace-nowrap">Live Feed ({donations.length})</span>
               </button>
 
               <button
                 onClick={() => setActiveTab('inspector')}
-                className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
+                className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 flex-1 md:flex-none justify-center ${
                   activeTab === 'inspector'
                     ? 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/30'
                     : 'text-slate-400 hover:text-white hover:bg-slate-900'
                 }`}
               >
-                <Code2 className="w-4 h-4" />
-                <span>Smart Contract Bytecode Explorer</span>
+                <Code2 className="w-4 h-4 shrink-0" />
+                <span className="whitespace-nowrap">Bytecode Explorer</span>
               </button>
             </div>
 
-            <button onClick={() => setIsDonateModalOpen(true)} className="btn-primary text-xs py-2 px-4 shadow-lg">
-              <Heart className="w-4 h-4 text-rose-300 fill-rose-300" />
+            <button onClick={() => setIsDonateModalOpen(true)} className="btn-primary text-xs py-2 px-4 shadow-lg w-full md:w-auto flex justify-center items-center gap-2">
+              <Heart className="w-4 h-4 text-rose-300 fill-rose-300 shrink-0" />
               <span>Donate Now</span>
             </button>
           </div>
