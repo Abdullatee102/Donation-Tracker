@@ -250,7 +250,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen relative flex flex-col justify-between">
+    <div className="min-h-screen relative flex flex-col justify-between overflow-x-hidden w-full max-w-[100vw]">
       <div className="ambient-glow"></div>
 
       <div>

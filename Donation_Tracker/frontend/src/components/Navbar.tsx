@@ -34,17 +34,17 @@ export function Navbar({
               <Zap className="w-5 h-5 text-cyan-400 animate-pulse" />
             </div>
           </div>
-          <div>
+          <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
-              <h1 className="font-extrabold text-lg sm:text-xl tracking-tight text-white">
+              <h1 className="font-extrabold text-lg sm:text-xl tracking-tight text-white truncate">
                 <span className="gradient-text">BotDonationTracker</span>
               </h1>
-              <span className="badge badge-bohr">
+              <span className="badge badge-bohr shrink-0">
                 <span className="pulse-indicator"></span>
                 LIVE RPC
               </span>
             </div>
-            <p className="text-xs text-slate-400">Live blockchain data • Smart contracts and wallet access</p>
+            <p className="text-xs text-slate-400 truncate max-w-[200px] sm:max-w-none">Live blockchain data • Smart contracts and wallet access</p>
           </div>
         </div>
 

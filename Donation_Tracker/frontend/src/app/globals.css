@@ -67,6 +67,7 @@ select:focus-visible {
 .ambient-glow {
   position: absolute;
   width: 600px;
+  max-width: 100vw;
   height: 600px;
   background: radial-gradient(circle, rgba(0, 242, 254, 0.08) 0%, rgba(127, 0, 255, 0.03) 50%, transparent 70%);
   top: -200px;
