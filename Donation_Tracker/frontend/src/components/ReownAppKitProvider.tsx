@@ -6,7 +6,6 @@ import { createAppKit } from '@reown/appkit/react';
 import { mainnet, sepolia } from '@reown/appkit/networks';
 import { WagmiAdapter } from '@reown/appkit-adapter-wagmi';
 import { WagmiProvider, http } from 'wagmi';
-import { injected, walletConnect, coinbaseWallet } from 'wagmi/connectors';
 import { BOHR_TESTNET } from '../lib/networks';
 
 const queryClient = new QueryClient({
@@ -43,43 +42,30 @@ export const metadata = {
 
 export const networks = [bohrTestnet, mainnet, sepolia];
 
-// Explicitly populate wallet connectors to ensure they render in the modal
-const connectors = [
-  walletConnect({ projectId, metadata, showQrModal: false }),
-  injected({ shimDisconnect: true }),
-  coinbaseWallet({
-    appName: metadata.name,
-    appLogoUrl: metadata.icons[0]
-  })
-];
-
 export const wagmiAdapter = new WagmiAdapter({
   projectId,
   networks,
   // @ts-ignore
   metadata,
-  ssr: true,
-  connectors
+  ssr: true
 });
 
 export const wagmiConfig = wagmiAdapter.wagmiConfig;
 
-let appKitInstance: any;
+if (typeof window !== 'undefined') {
+  createAppKit({
+    adapters: [wagmiAdapter],
+    projectId,
+    networks: networks as any,
+    defaultNetwork: bohrTestnet as any,
+    metadata,
+    features: {
+      analytics: true,
+    }
+  });
+}
 
 export function Web3Provider({ children }: { children: ReactNode }) {
-  if (typeof window !== 'undefined' && !appKitInstance) {
-    appKitInstance = createAppKit({
-      adapters: [wagmiAdapter],
-      projectId,
-      networks: networks as any,
-      defaultNetwork: bohrTestnet as any,
-      metadata,
-      features: {
-        analytics: true,
-      }
-    });
-  }
-
   return (
     <WagmiProvider config={wagmiConfig}>
       <QueryClientProvider client={queryClient}>
