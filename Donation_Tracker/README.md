@@ -50,7 +50,7 @@ To deploy the smart contract to the Bohr Testnet:
 npm run deploy:contract
 ```
 
-### Running the App
+### Running the App Locally
 
 Start the Next.js development server:
 
@@ -58,7 +58,12 @@ Start the Next.js development server:
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to interact with the application.
+Open [http://localhost:3000](http://localhost:3000) with your browser to interact with the local development environment.
+
+### Live Production App
+
+The application has been deployed live and is available for everyone to test globally!
+**Access it here:** [https://donation-tracker-henna.vercel.app](https://donation-tracker-henna.vercel.app)
 
 ## Technologies Used
 

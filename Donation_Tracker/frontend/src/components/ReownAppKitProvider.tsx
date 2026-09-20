@@ -33,11 +33,20 @@ export const bohrTestnet = {
 // Read Reown Project ID from env variables
 export const projectId = process.env.NEXT_PUBLIC_REOWN_PROJECT_ID || process.env.REOWN_PROJECT_ID || '202f49df3a791669309a0178347d64ee';
 
+export const metadata = {
+  name: 'BotDonationTracker',
+  description: 'Track live BOT and ETH donations on smart contracts',
+  url: 'https://donation-tracker-henna.vercel.app', 
+  icons: ['https://avatars.githubusercontent.com/u/179229932']
+};
+
 export const networks = [bohrTestnet, mainnet, sepolia];
 
 export const wagmiAdapter = new WagmiAdapter({
   projectId,
-  networks
+  networks,
+  // @ts-ignore
+  metadata
 });
 
 export const wagmiConfig = wagmiAdapter.wagmiConfig;
@@ -51,6 +60,7 @@ export function Web3Provider({ children }: { children: ReactNode }) {
       projectId,
       networks: networks as any,
       defaultNetwork: bohrTestnet as any,
+      metadata,
       features: {
         analytics: true,
       }
