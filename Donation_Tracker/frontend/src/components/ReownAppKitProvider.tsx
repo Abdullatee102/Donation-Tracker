@@ -6,6 +6,7 @@ import { createAppKit } from '@reown/appkit/react';
 import { mainnet, sepolia } from '@reown/appkit/networks';
 import { WagmiAdapter } from '@reown/appkit-adapter-wagmi';
 import { WagmiProvider, http } from 'wagmi';
+import { injected, walletConnect, coinbaseWallet, metaMask } from 'wagmi/connectors';
 import { BOHR_TESTNET } from '../lib/networks';
 
 const queryClient = new QueryClient({
@@ -47,7 +48,13 @@ export const wagmiAdapter = new WagmiAdapter({
   networks,
   // @ts-ignore
   metadata,
-  ssr: true
+  ssr: true,
+  connectors: [
+    walletConnect({ projectId, metadata, showQrModal: false }),
+    metaMask(),
+    injected({ shimDisconnect: true }),
+    coinbaseWallet({ appName: metadata.name })
+  ]
 });
 
 export const wagmiConfig = wagmiAdapter.wagmiConfig;
@@ -61,6 +68,9 @@ if (typeof window !== 'undefined') {
     metadata,
     features: {
       analytics: true,
+      allWallets: true, // Force "All Wallets" button to show
+      email: false,
+      socials: false,
     }
   });
 }
