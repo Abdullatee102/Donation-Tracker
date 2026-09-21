@@ -8,8 +8,6 @@ import {
   getLatestBlockNumber,
   fetchLiveDonationHistory,
   getLiveTokenPriceUsd,
-  getWalletProvider,
-  switchOrAddNetworkInWallet,
 } from '@/lib/web3';
 import { Navbar } from '@/components/Navbar';
 import { ContractSelector } from '@/components/ContractSelector';
@@ -17,8 +15,9 @@ import { StatsOverview } from '@/components/StatsOverview';
 import { TransactionFeed } from '@/components/TransactionFeed';
 import { ContractExplorer } from '@/components/ContractExplorer';
 import { DonateModal } from '@/components/DonateModal';
-import { WalletModal } from '@/components/WalletModal';
 import { Heart, Activity, Code2 } from 'lucide-react';
+import { useAccount, useDisconnect, useBalance } from 'wagmi';
+import { useAppKit } from '@reown/appkit/react';
 
 export default function Home() {
   // Default network: Bohr Testnet (Chain ID 968)
@@ -42,112 +41,30 @@ export default function Home() {
   // Auto-refresh interval (5s default)
   const [autoRefreshSec, setAutoRefreshSec] = useState<number>(5);
 
-  // Wallet Connection State
-  const [walletState, setWalletState] = useState<WalletState>({
-    isConnected: false,
-    address: null,
-    chainId: null,
-    balance: '0.0000',
-    symbol: BOHR_TESTNET.symbol,
+  // Wagmi & Reown AppKit Web3 hooks
+  const { address, isConnected, chainId } = useAccount();
+  const { disconnect } = useDisconnect();
+  const { open } = useAppKit();
+  const { data: balanceData } = useBalance({
+    address: address,
   });
 
-  // Wallet Modal open state
-  const [isWalletModalOpen, setIsWalletModalOpen] = useState<boolean>(false);
-
-  // Connect via Browser Extension (MetaMask / Rabby / Injected)
-  const connectExtensionWallet = async () => {
-    let provider = await getWalletProvider();
-    if (!provider && typeof window !== 'undefined' && (window as any).ethereum) {
-      provider = (window as any).ethereum;
-    }
-
-    if (!provider) {
-      setIsWalletModalOpen(true);
-      return;
-    }
-
-    try {
-      const accounts = await provider.request({ method: 'eth_requestAccounts' });
-      const chainHex = await provider.request({ method: 'eth_chainId' });
-      const chainId = parseInt(chainHex, 16);
-
-      if (accounts && accounts.length > 0) {
-        const userAddr = accounts[0];
-        const balObj = await getLiveBalance(userAddr, currentNetwork.rpcUrl);
-
-        setWalletState({
-          isConnected: true,
-          address: userAddr,
-          chainId,
-          balance: balObj.formatted,
-          symbol: currentNetwork.symbol,
-        });
-
-        // Prompt user to switch to Bohr testnet if on wrong network
-        if (chainId !== currentNetwork.chainId) {
-          await switchOrAddNetworkInWallet(currentNetwork);
-        }
-      }
-    } catch (err: any) {
-      console.error('Wallet connection error:', err);
-      if (err?.code === 4001) return;
-      alert('Failed to connect wallet: ' + (err?.message || 'User rejected request'));
-    }
+  // Unified reactive wallet state connected to modern Wagmi stack
+  const walletState: WalletState = {
+    isConnected: !!isConnected,
+    address: address || null,
+    chainId: chainId || null,
+    balance: balanceData ? balanceData.formatted.slice(0, 7) : '0.0000',
+    symbol: balanceData?.symbol || currentNetwork.symbol,
   };
 
-  // Connect Instant Demo / Testnet Wallet Account
-  const connectDemoWallet = async () => {
-    const demoAddr = '0x71C7656EC7ab88b098defB751B7401B5f6d8976F';
-    const balObj = await getLiveBalance(demoAddr, currentNetwork.rpcUrl);
-
-    setWalletState({
-      isConnected: true,
-      address: demoAddr,
-      chainId: currentNetwork.chainId,
-      balance: balObj.formatted,
-      symbol: currentNetwork.symbol,
-    });
+  const handleConnectClick = () => {
+    open();
   };
 
-  // Disconnect Web3 Wallet
-  const disconnectWallet = () => {
-    setWalletState({
-      isConnected: false,
-      address: null,
-      chainId: null,
-      balance: '0.0000',
-      symbol: currentNetwork.symbol,
-    });
+  const handleDisconnectClick = () => {
+    disconnect();
   };
-
-  // Check if wallet is already connected on mount
-  useEffect(() => {
-    const checkConnectedWallet = async () => {
-      const provider = await getWalletProvider();
-      if (provider) {
-        try {
-          const accounts = await provider.request({ method: 'eth_accounts' });
-          if (accounts && accounts.length > 0) {
-            const userAddr = accounts[0];
-            const chainHex = await provider.request({ method: 'eth_chainId' });
-            const chainId = parseInt(chainHex, 16);
-            const balObj = await getLiveBalance(userAddr, currentNetwork.rpcUrl);
-
-            setWalletState({
-              isConnected: true,
-              address: userAddr,
-              chainId,
-              balance: balObj.formatted,
-              symbol: currentNetwork.symbol,
-            });
-          }
-        } catch (e) {
-          console.error('Error checking wallet auto-connection:', e);
-        }
-      }
-    };
-    checkConnectedWallet();
-  }, [currentNetwork]);
 
   // Fetch live blockchain data directly from RPC
   const refreshBlockchainData = useCallback(async () => {
@@ -166,18 +83,12 @@ export default function Home() {
       setLatestBlock(blockNum);
       setDonations(txs);
       setTokenUsdPrice(price);
-
-      // Update wallet balance if connected
-      if (walletState.isConnected && walletState.address) {
-        const userBal = await getLiveBalance(walletState.address, currentNetwork.rpcUrl);
-        setWalletState((prev) => ({ ...prev, balance: userBal.formatted }));
-      }
     } catch (err) {
       console.error('Error fetching live RPC data:', err);
     } finally {
       setIsLoading(false);
     }
-  }, [targetAddress, currentNetwork, walletState.isConnected, walletState.address]);
+  }, [targetAddress, currentNetwork]);
 
   // Initial load & automatic polling loop
   useEffect(() => {
@@ -193,62 +104,6 @@ export default function Home() {
     return () => clearInterval(interval);
   }, [autoRefreshSec, refreshBlockchainData]);
 
-  // Listen to window.ethereum account / chain changes
-  useEffect(() => {
-    let provider: Awaited<ReturnType<typeof getWalletProvider>>;
-    let isMounted = true;
-
-    const setupProviderListeners = async () => {
-      provider = await getWalletProvider();
-      if (!isMounted || !provider?.on) return;
-
-      const handleAccountsChanged = (accounts: string[]) => {
-        if (accounts.length === 0) {
-          setWalletState((prev) => ({ ...prev, isConnected: false, address: null }));
-        } else {
-          setWalletState((prev) => ({ ...prev, isConnected: true, address: accounts[0] }));
-        }
-      };
-
-      const handleChainChanged = () => {
-        window.location.reload();
-      };
-
-      provider.on('accountsChanged', handleAccountsChanged);
-      provider.on('chainChanged', handleChainChanged);
-
-      return () => {
-        provider?.removeListener?.('accountsChanged', handleAccountsChanged);
-        provider?.removeListener?.('chainChanged', handleChainChanged);
-      };
-    };
-
-    let removeListeners: (() => void) | undefined;
-    setupProviderListeners().then((cleanup) => {
-      removeListeners = cleanup;
-    });
-
-    return () => {
-      isMounted = false;
-      removeListeners?.();
-    };
-  }, []);
-
-  // Responsive Connect Wallet Handler
-  const handleConnectClick = async () => {
-    // 1. Open connection modal immediately so options are always visible
-    setIsWalletModalOpen(true);
-
-    // 2. If browser wallet extension is present, attempt direct request
-    if (typeof window !== 'undefined' && (window as any).ethereum) {
-      try {
-        await connectExtensionWallet();
-      } catch (err) {
-        console.log('Extension prompt error:', err);
-      }
-    }
-  };
-
   return (
     <div className="min-h-screen relative flex flex-col justify-between overflow-x-hidden w-full max-w-[100vw]">
       <div className="ambient-glow"></div>
@@ -259,11 +114,10 @@ export default function Home() {
           currentNetwork={currentNetwork}
           onSelectNetwork={(net) => {
             setCurrentNetwork(net);
-            setWalletState((prev) => ({ ...prev, symbol: net.symbol }));
           }}
           walletState={walletState}
           onConnectWallet={handleConnectClick}
-          onDisconnectWallet={disconnectWallet}
+          onDisconnectWallet={handleDisconnectClick}
         />
 
         {/* Main Content Area */}
@@ -316,13 +170,17 @@ export default function Home() {
               </button>
             </div>
 
-            <button onClick={() => setIsDonateModalOpen(true)} className="btn-primary text-xs py-2 px-4 shadow-lg w-full md:w-auto flex justify-center items-center gap-2">
-              <Heart className="w-4 h-4 text-rose-300 fill-rose-300 shrink-0" />
+            {/* Direct Donation Action Button */}
+            <button
+              onClick={() => setIsDonateModalOpen(true)}
+              className="w-full md:w-auto btn-primary text-xs py-2.5 px-6 shadow-lg shadow-cyan-500/20 flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <Heart className="w-4 h-4 fill-current" />
               <span>Donate Now</span>
             </button>
           </div>
 
-          {/* Tab Views */}
+          {/* Active View Content */}
           {activeTab === 'stream' ? (
             <TransactionFeed
               donations={donations}
@@ -335,15 +193,6 @@ export default function Home() {
           )}
         </main>
       </div>
-
-      {/* Wallet Connection Modal */}
-      <WalletModal
-        isOpen={isWalletModalOpen}
-        onClose={() => setIsWalletModalOpen(false)}
-        onConnectExtension={connectExtensionWallet}
-        onConnectDemo={connectDemoWallet}
-        currentNetwork={currentNetwork}
-      />
 
       {/* Donate Modal */}
       <DonateModal

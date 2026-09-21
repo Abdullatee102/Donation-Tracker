@@ -7,9 +7,22 @@ export interface EthereumProvider {
   removeListener?: (event: string, handler: (...args: any[]) => void) => void;
 }
 
-/** Resolve MetaMask, Rabby, Coinbase Wallet, and other injected wallets dynamically on demand. */
+/** Resolve active Wagmi connector provider, MetaMask, Rabby, Coinbase Wallet, and other injected wallets dynamically. */
 export async function getWalletProvider(): Promise<EthereumProvider | undefined> {
   if (typeof window === 'undefined') return undefined;
+
+  // 1. Check if Wagmi has an active connector with a live provider
+  try {
+    const { wagmiConfig } = await import('@/components/ReownAppKitProvider');
+    const state = wagmiConfig.state;
+    const currentConnection = state?.connections?.get(state.current as any);
+    if (currentConnection?.connector) {
+      const provider = (await currentConnection.connector.getProvider()) as EthereumProvider;
+      if (provider) return provider;
+    }
+  } catch {
+    // Continue fallback
+  }
 
   const win = window as unknown as { ethereum?: EthereumProvider & { providers?: EthereumProvider[] } };
   

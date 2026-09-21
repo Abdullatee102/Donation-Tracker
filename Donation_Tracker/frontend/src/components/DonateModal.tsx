@@ -5,6 +5,7 @@ import { NetworkConfig, WalletState } from '@/lib/types';
 import { sendWeb3Donation, switchOrAddNetworkInWallet } from '@/lib/web3';
 import { Heart, Send, X, ExternalLink, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { useAppKit } from '@reown/appkit/react';
 
 interface DonateModalProps {
   isOpen: boolean;
@@ -31,6 +32,7 @@ export function DonateModal({
 
   const [recipient, setRecipient] = useState<string>(targetAddress || '');
   const [copied, setCopied] = useState<boolean>(false);
+  const { open } = useAppKit();
 
   if (!isOpen) return null;
 
@@ -62,7 +64,7 @@ export function DonateModal({
   const handleDonateSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!walletState.isConnected || !walletState.address) {
-      alert('Please connect your Web3 Wallet first!');
+      open();
       return;
     }
 
